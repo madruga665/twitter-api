@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/madruga665/twitter-api/api/controllers/repositories"
 	"github.com/madruga665/twitter-api/api/entities"
+	"github.com/madruga665/twitter-api/api/repositories"
 	connection "github.com/madruga665/twitter-api/db"
 )
 
