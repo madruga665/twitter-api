@@ -1,28 +1,38 @@
 package controllers
 
 import (
-	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/madruga665/twitter-api/api/controllers/repositories"
 	"github.com/madruga665/twitter-api/api/entities"
+	connection "github.com/madruga665/twitter-api/db"
 )
 
-type tweetController struct {
-	tweets []entities.Tweet
+type tweetController struct{}
+
+func NewTweetController() tweetController {
+	return tweetController{}
 }
 
-func NewTweetController() *tweetController {
-	return &tweetController{}
+func (controller tweetController) GetAll(ctx *gin.Context) {
+	db := connection.DB
+	tweets, _ := repositories.GetAll(db)
+
+	ctx.JSON(http.StatusOK, tweets)
 }
 
-func (controller *tweetController) GetAll(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, controller.tweets)
+func (controller tweetController) GetById(ctx *gin.Context) {
+	db := connection.DB
+	tweetId := ctx.Param("id")
+	tweet, _ := repositories.GetById(db, tweetId)
+
+	ctx.JSON(http.StatusOK, tweet)
 }
 
-func (controller *tweetController) Create(ctx *gin.Context) {
+func (controller tweetController) Create(ctx *gin.Context) {
+	db := connection.DB
 	tweet := entities.NewTweet()
 
 	if error := ctx.BindJSON(&tweet); error != nil {
@@ -30,51 +40,30 @@ func (controller *tweetController) Create(ctx *gin.Context) {
 		return
 	}
 
-	controller.tweets = append(controller.tweets, *tweet)
+	repositories.Create(db, *tweet)
 
-	ctx.JSON(http.StatusNoContent, controller.tweets)
+	ctx.JSON(http.StatusCreated, nil)
 }
 
-func (controller *tweetController) Delete(ctx *gin.Context) {
+func (controller tweetController) Update(ctx *gin.Context) {
+	db := connection.DB
 	tweetId := ctx.Param("id")
 
-	for index, tweet := range controller.tweets {
-		if tweet.ID == tweetId {
-			controller.tweets = append(controller.tweets[0:index], controller.tweets[index+1:]...)
-		}
+	var tweet entities.UpdateTweet
+	if err := ctx.ShouldBindJSON(&tweet); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusNotFound, gin.H{
-		"error": "Tweet not found",
-	})
+	repositories.Update(db, tweetId, tweet.Description)
+
+	ctx.JSON(http.StatusNoContent, nil)
 }
 
-func (controller *tweetController) GetById(ctx *gin.Context) {
+func (controller tweetController) Delete(ctx *gin.Context) {
+	db := connection.DB
 	tweetId := ctx.Param("id")
+	repositories.Delete(db, tweetId)
 
-	for _, tweet := range controller.tweets {
-		if tweet.ID == tweetId {
-			ctx.JSON(http.StatusOK, tweet)
-		}
-	}
-}
-
-func (controller *tweetController) Update(ctx *gin.Context) {
-	tweetId := ctx.Param("id")
-	body, _ := io.ReadAll(ctx.Request.Body)
-
-	var jsonData map[string]interface{}
-
-	json.Unmarshal(body, &jsonData)
-
-	descriptionBody := jsonData["description"].(string)
-
-	for _, tweet := range controller.tweets {
-		if tweet.ID == tweetId {
-			tweet.Description = descriptionBody
-			ctx.JSON(http.StatusOK, tweet)
-			break
-		}
-	}
+	ctx.JSON(http.StatusNoContent, nil)
 }
