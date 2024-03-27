@@ -1,13 +1,14 @@
-package controllers
+package controller
 
 import (
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/madruga665/twitter-api/api/entities"
-	"github.com/madruga665/twitter-api/api/repositories"
+
 	connection "github.com/madruga665/twitter-api/db"
+	"github.com/madruga665/twitter-api/internal/tweet/domain/entity"
+	"github.com/madruga665/twitter-api/internal/tweet/domain/repository"
 )
 
 type tweetController struct{}
@@ -18,7 +19,7 @@ func NewTweetController() tweetController {
 
 func (controller tweetController) GetAll(ctx *gin.Context) {
 	db := connection.DB
-	tweets, _ := repositories.GetAll(db)
+	tweets, _ := repository.GetAll(db)
 
 	ctx.JSON(http.StatusOK, tweets)
 }
@@ -26,36 +27,36 @@ func (controller tweetController) GetAll(ctx *gin.Context) {
 func (controller tweetController) GetById(ctx *gin.Context) {
 	db := connection.DB
 	tweetId := ctx.Param("id")
-	tweet, _ := repositories.GetById(db, tweetId)
+	tweet, _ := repository.GetById(db, tweetId)
 
 	ctx.JSON(http.StatusOK, tweet)
 }
 
 func (controller tweetController) Create(ctx *gin.Context) {
 	db := connection.DB
-	tweet := entities.NewTweet()
+	tweet := entity.NewTweet()
 
 	if error := ctx.BindJSON(&tweet); error != nil {
 		log.Fatal("Erro ao criar tweet")
 		return
 	}
 
-	repositories.Create(db, *tweet)
+	repository.Create(db, *tweet)
 
-	ctx.JSON(http.StatusCreated, nil)
+	ctx.JSON(http.StatusCreated, tweet)
 }
 
 func (controller tweetController) Update(ctx *gin.Context) {
 	db := connection.DB
 	tweetId := ctx.Param("id")
 
-	var tweet entities.UpdateTweet
+	var tweet entity.UpdateTweet
 	if err := ctx.ShouldBindJSON(&tweet); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	repositories.Update(db, tweetId, tweet.Description)
+	repository.Update(db, tweetId, tweet.Description)
 
 	ctx.JSON(http.StatusNoContent, nil)
 }
@@ -63,7 +64,7 @@ func (controller tweetController) Update(ctx *gin.Context) {
 func (controller tweetController) Delete(ctx *gin.Context) {
 	db := connection.DB
 	tweetId := ctx.Param("id")
-	repositories.Delete(db, tweetId)
+	repository.Delete(db, tweetId)
 
 	ctx.JSON(http.StatusNoContent, nil)
 }

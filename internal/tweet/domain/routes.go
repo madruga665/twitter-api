@@ -2,11 +2,11 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/madruga665/twitter-api/api/controllers"
+	"github.com/madruga665/twitter-api/internal/tweet/domain/controller"
 )
 
 func Routes(router *gin.Engine) *gin.RouterGroup {
-	tweetController := controllers.NewTweetController()
+	tweetController := controller.NewTweetController()
 
 	v1 := router.Group("/v1")
 	{

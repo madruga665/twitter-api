@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/madruga665/twitter-api/api/routes"
 	connection "github.com/madruga665/twitter-api/db"
+	routes "github.com/madruga665/twitter-api/internal/tweet/domain"
 )
 
 func main() {

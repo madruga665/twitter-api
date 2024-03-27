@@ -1,29 +1,29 @@
-package repositories
+package repository
 
 import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
-	"github.com/madruga665/twitter-api/api/entities"
+	"github.com/madruga665/twitter-api/internal/tweet/domain/entity"
 )
 
-func Create(db *sql.DB, tweet entities.Tweet) error {
+func Create(db *sql.DB, tweet entity.Tweet) error {
 	query := `INSERT INTO tweets (id, description) VALUES ($1, $2);`
 	_, err := db.Exec(query, tweet.ID, tweet.Description)
 
 	return err
 }
 
-func GetAll(db *sql.DB) ([]entities.Tweet, error) {
+func GetAll(db *sql.DB) ([]entity.Tweet, error) {
 	query := "SELECT id, description FROM tweets"
 	result, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 
-	var tweets []entities.Tweet
+	var tweets []entity.Tweet
 	for result.Next() {
-		var tweet entities.Tweet
+		var tweet entity.Tweet
 		err := result.Scan(&tweet.ID, &tweet.Description)
 		if err != nil {
 			return nil, err
@@ -34,19 +34,19 @@ func GetAll(db *sql.DB) ([]entities.Tweet, error) {
 	return tweets, nil
 }
 
-func GetById(db *sql.DB, tweetID string) (entities.Tweet, error) {
+func GetById(db *sql.DB, tweetID string) (entity.Tweet, error) {
 	query := "SELECT id, description FROM tweets WHERE id = $1"
 	result, err := db.Query(query, tweetID)
 	if err != nil {
-		return entities.Tweet{}, err
+		return entity.Tweet{}, err
 	}
 	defer result.Close()
 
-	var tweet entities.Tweet
+	var tweet entity.Tweet
 	for result.Next() {
 		err := result.Scan(&tweet.ID, &tweet.Description)
 		if err != nil {
-			return entities.Tweet{}, err
+			return entity.Tweet{}, err
 		}
 	}
 
