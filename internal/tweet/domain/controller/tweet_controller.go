@@ -9,22 +9,26 @@ import (
 	connection "github.com/madruga665/twitter-api/db"
 	"github.com/madruga665/twitter-api/internal/tweet/domain/entity"
 	"github.com/madruga665/twitter-api/internal/tweet/domain/repository"
+	"github.com/madruga665/twitter-api/internal/tweet/domain/service"
 )
 
-type tweetController struct{}
-
-func NewTweetController() tweetController {
-	return tweetController{}
+type tweetController struct {
+	service service.TweetServiceInterface
 }
 
-func (controller tweetController) GetAll(ctx *gin.Context) {
-	db := connection.DB
-	tweets, _ := repository.GetAll(db)
+func New(service service.TweetServiceInterface) *tweetController {
+	return &tweetController{
+		service: service,
+	}
+}
+
+func (controller *tweetController) GetAll(ctx *gin.Context) {
+	tweets := controller.service.GetAll()
 
 	ctx.JSON(http.StatusOK, tweets)
 }
 
-func (controller tweetController) GetById(ctx *gin.Context) {
+func (controller *tweetController) GetById(ctx *gin.Context) {
 	db := connection.DB
 	tweetId := ctx.Param("id")
 	tweet, _ := repository.GetById(db, tweetId)
@@ -32,7 +36,7 @@ func (controller tweetController) GetById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, tweet)
 }
 
-func (controller tweetController) Create(ctx *gin.Context) {
+func (controller *tweetController) Create(ctx *gin.Context) {
 	db := connection.DB
 	tweet := entity.NewTweet()
 
@@ -46,7 +50,7 @@ func (controller tweetController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, tweet)
 }
 
-func (controller tweetController) Update(ctx *gin.Context) {
+func (controller *tweetController) Update(ctx *gin.Context) {
 	db := connection.DB
 	tweetId := ctx.Param("id")
 
@@ -61,7 +65,7 @@ func (controller tweetController) Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, nil)
 }
 
-func (controller tweetController) Delete(ctx *gin.Context) {
+func (controller *tweetController) Delete(ctx *gin.Context) {
 	db := connection.DB
 	tweetId := ctx.Param("id")
 	repository.Delete(db, tweetId)

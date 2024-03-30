@@ -7,31 +7,28 @@ import (
 	"github.com/madruga665/twitter-api/internal/tweet/domain/entity"
 )
 
+type tweetRepository struct {
+	db *sql.DB
+}
+
+func New(db *sql.DB) *tweetRepository {
+	return &tweetRepository{
+		db: db,
+	}
+}
+
+func (repository *tweetRepository) GetAll() (*sql.Rows, error) {
+	query := "SELECT id, description FROM tweets"
+	result, err := repository.db.Query(query)
+
+	return result, err
+}
+
 func Create(db *sql.DB, tweet entity.Tweet) error {
 	query := `INSERT INTO tweets (id, description) VALUES ($1, $2);`
 	_, err := db.Exec(query, tweet.ID, tweet.Description)
 
 	return err
-}
-
-func GetAll(db *sql.DB) ([]entity.Tweet, error) {
-	query := "SELECT id, description FROM tweets"
-	result, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-
-	var tweets []entity.Tweet
-	for result.Next() {
-		var tweet entity.Tweet
-		err := result.Scan(&tweet.ID, &tweet.Description)
-		if err != nil {
-			return nil, err
-		}
-		tweets = append(tweets, tweet)
-	}
-
-	return tweets, nil
 }
 
 func GetById(db *sql.DB, tweetID string) (entity.Tweet, error) {
