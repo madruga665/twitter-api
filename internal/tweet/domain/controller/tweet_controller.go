@@ -29,9 +29,8 @@ func (controller *tweetController) GetAll(ctx *gin.Context) {
 }
 
 func (controller *tweetController) GetById(ctx *gin.Context) {
-	db := connection.DB
 	tweetId := ctx.Param("id")
-	tweet, _ := repository.GetById(db, tweetId)
+	tweet := controller.service.GetById(tweetId)
 
 	ctx.JSON(http.StatusOK, tweet)
 }

@@ -33,3 +33,20 @@ func (service *tweetService) GetAll() []entity.Tweet {
 
 	return tweets
 }
+
+func (service *tweetService) GetById(tweetId string) entity.Tweet {
+	result, error := service.repository.GetById(tweetId)
+	if error != nil {
+		log.Fatal("error ao recuperar tweet", error)
+	}
+
+	var tweet entity.Tweet
+	for result.Next() {
+		error := result.Scan(&tweet.ID, &tweet.Description)
+		if error != nil {
+			log.Fatal("error ao recuperar tweet", error)
+		}
+	}
+
+	return tweet
+}

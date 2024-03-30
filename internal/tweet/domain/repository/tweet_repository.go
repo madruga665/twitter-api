@@ -24,30 +24,18 @@ func (repository *tweetRepository) GetAll() (*sql.Rows, error) {
 	return result, err
 }
 
+func (repository *tweetRepository) GetById(tweetID string) (*sql.Rows, error) {
+	query := "SELECT id, description FROM tweets WHERE id = $1"
+	result, error := repository.db.Query(query, tweetID)
+
+	return result, error
+}
+
 func Create(db *sql.DB, tweet entity.Tweet) error {
 	query := `INSERT INTO tweets (id, description) VALUES ($1, $2);`
 	_, err := db.Exec(query, tweet.ID, tweet.Description)
 
 	return err
-}
-
-func GetById(db *sql.DB, tweetID string) (entity.Tweet, error) {
-	query := "SELECT id, description FROM tweets WHERE id = $1"
-	result, err := db.Query(query, tweetID)
-	if err != nil {
-		return entity.Tweet{}, err
-	}
-	defer result.Close()
-
-	var tweet entity.Tweet
-	for result.Next() {
-		err := result.Scan(&tweet.ID, &tweet.Description)
-		if err != nil {
-			return entity.Tweet{}, err
-		}
-	}
-
-	return tweet, nil
 }
 
 func Delete(db *sql.DB, tweetID string) error {
